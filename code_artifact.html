@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Royal Heart VIP Lounge • Poker & Love Slot</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Google Fonts: Cinzel, Playfair Display & Caveat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Cinzel:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+            casino: ['Cinzel', 'serif'],
+            hand: ['Caveat', 'cursive'],
+          },
+          colors: {
+            gold: {
+              300: '#fde047',
+              400: '#facc15',
+              500: '#eab308',
+              600: '#ca8a04',
+              700: '#a16207',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 3D Card Flip Geometry */
+    .perspective-container {
+      perspective: 1200px;
+      -webkit-perspective: 1200px;
+    }
+    
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+      cursor: pointer;
+    }
+    
+    .card-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 0.75rem;
+    }
+    
+    .card-back-side {
+      transform: rotateY(0deg);
+      z-index: 2;
+    }
+    
+    .card-front-side {
+      transform: rotateY(180deg);
+      z-index: 1;
+    }
+    
+    .is-revealed {
+      transform: rotateY(180deg) !important;
+    }
+
+    /* Casino Velvet and Felts */
+    .poker-felt {
+      background: radial-gradient(ellipse at center, #186343 0%, #0d422a 55%, #051a10 100%);
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 0, 0, 0.95);
+    }
+    
+    .table-rail {
+      background: radial-gradient(circle at 50% 0%, #3e1f0c 0%, #170902 100%);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), inset 0 2px 4px rgba(250, 204, 21, 0.35);
+    }
+
+    /* Card Back Luxury Pattern */
+    .card-back-pattern {
+      background-color: #630a13;
+      background-image: 
+        radial-gradient(#961623 18%, transparent 19%),
+        radial-gradient(#300206 18%, transparent 19%);
+      background-size: 13px 13px;
+      background-position: 0 0, 6.5px 6.5px;
+      border: 2px solid #ca8a04;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+    }
+
+    /* Slot Machine Styling */
+    .slot-cabinet {
+      background: linear-gradient(180deg, #2b170c 0%, #120904 100%);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.9), inset 0 1px 2px rgba(250, 204, 21, 0.6);
+    }
+
+    .slot-window {
+      background: #08090a;
+      box-shadow: inset 0 8px 18px rgba(0,0,0,0.9), inset 0 -8px 18px rgba(0,0,0,0.9);
+    }
+
+    .reel-track {
+      transition: transform 0.1s linear;
+    }
+
+    /* Neon & Glow keyframes */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(250, 204, 21, 0.3); border-color: rgba(250, 204, 21, 0.4); }
+      50% { box-shadow: 0 0 25px rgba(250, 204, 21, 0.9); border-color: rgba(250, 204, 21, 1); }
+    }
+    .pulse-card {
+      animation: pulseGlow 1.8s infinite;
+    }
+
+    @keyframes jackpotFlash {
+      0%, 100% { filter: drop-shadow(0 0 8px #facc15) brightness(1); }
+      50% { filter: drop-shadow(0 0 25px #f43f5e) brightness(1.3); }
+    }
+    .jackpot-active {
+      animation: jackpotFlash 0.5s infinite;
+    }
+
+    /* Custom Scrollbar for sleekness */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070909;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #ca8a04;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body class="bg-[#050707] text-stone-100 min-h-screen font-sans selection:bg-rose-600 selection:text-white flex flex-col justify-between overflow-x-hidden">
+
+  <!-- Header Bar -->
+  <header class="w-full max-w-5xl mx-auto px-4 pt-5 pb-3 flex items-center justify-between relative z-20">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-600 via-yellow-400 to-amber-700 p-0.5 flex items-center justify-center shadow-lg shadow-yellow-900/40">
+        <div class="w-full h-full bg-black/85 rounded-full flex items-center justify-center text-rose-500 font-bold text-xl">
+          ♥
+        </div>
+      </div>
+      <div>
+        <h1 class="font-casino tracking-widest text-sm sm:text-base text-yellow-300 uppercase font-black">Royal Heart Lounge</h1>
+        <p class="text-[10px] sm:text-[11px] text-amber-200/60 uppercase tracking-widest">VIP Стол #777 • Только для нас двоих</p>
+      </div>
+    </div>
+
+    <!-- Quick Audio & Mode Actions -->
+    <div class="flex items-center gap-2">
+      <button id="soundToggleBtn" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-900/80 border border-yellow-500/40 hover:border-yellow-400 text-yellow-300 text-xs font-semibold backdrop-blur-md transition active:scale-95 shadow">
+        <span id="soundIcon">🔊</span>
+        <span id="soundText" class="hidden sm:inline">Звук: Вкл</span>
+      </button>
+      <div class="px-3.5 py-1.5 rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs font-medium tracking-wide shadow">
+        Ставка: Все сердце ♥
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="w-full max-w-5xl mx-auto px-3 sm:px-6 py-2 flex-grow flex flex-col items-center justify-center relative z-10 space-y-12">
+
+    <!-- SECTION 1: POKER TABLE -->
+    <section class="w-full flex flex-col items-center">
+      
+      <!-- Table Header Intro -->
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-[11px] sm:text-xs font-casino uppercase tracking-wider mb-2">
+          ♠️ Texas Hold'em • Червовая любовь ♥️
+        </div>
+        <h2 class="text-xl sm:text-3xl font-serif text-white tracking-wide">
+          Главная раздача нашей жизни
+        </h2>
+        <p class="text-xs sm:text-sm text-stone-300/80 max-w-lg mx-auto mt-1">
+          Все карты изначально запечатаны. Открывай карты на столе и на руках — узнай, какую комбинацию подарила нам сама судьба!
+        </p>
+      </div>
+
+      <!-- Poker Felt Table Body -->
+      <div class="w-full table-rail rounded-[2.5rem] sm:rounded-[3.8rem] p-3 sm:p-5 border-4 border-[#3a1906] relative shadow-2xl">
+        
+        <div class="w-full poker-felt rounded-[2rem] sm:rounded-[3.2rem] py-6 sm:py-8 px-2 sm:px-6 border border-yellow-500/30 relative flex flex-col items-center">
+          
+          <!-- Felt Watermark -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5 select-none">
+            <div class="text-[170px] sm:text-[250px] font-casino font-black text-yellow-300">♥</div>
+          </div>
+
+          <!-- Pot & Interactive Chips Bar -->
+          <div class="w-full flex items-center justify-between border-b border-yellow-500/20 pb-3 mb-6 px-2 sm:px-6">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] sm:text-xs text-yellow-300/80 font-casino uppercase tracking-wider">Банк любви:</span>
+              <span class="px-2.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 font-bold font-mono text-xs sm:text-sm border border-yellow-500/40">
+                БЕСКОНЕЧНОСТЬ ∞
+              </span>
+            </div>
+
+            <!-- Chips Stack -->
+            <div class="flex items-center -space-x-2">
+              <div class="w-8 h-8 rounded-full bg-rose-600 border-2 border-dashed border-white flex items-center justify-center text-[10px] font-bold text-white shadow-lg cursor-pointer hover:-translate-y-1 transition active:scale-90" title="100% Любви" onclick="playChipSound()">♥</div>
+              <div class="w-8 h-8 rounded-full bg-amber-500 border-2 border-dashed border-stone-900 flex items-center justify-center text-[9px] font-bold text-stone-950 shadow-lg cursor-pointer hover:-translate-y-1 transition active:scale-90" title="Особое число" onclick="playChipSound()">333</div>
+              <div class="w-8 h-8 rounded-full bg-red-700 border-2 border-dashed border-yellow-300 flex items-center justify-center text-[8px] font-black text-yellow-300 shadow-lg cursor-pointer hover:-translate-y-1 transition active:scale-90" title="Олл-ин" onclick="playChipSound()">ALL IN</div>
+            </div>
+          </div>
+
+          <!-- Community Board (5 Cards: 10♥, J♥, A♥, 9♥, 8♥) -->
+          <div class="w-full text-center mb-8">
+            <div class="flex items-center justify-center gap-2 mb-2">
+              <span class="h-[1px] w-6 sm:w-10 bg-yellow-500/40"></span>
+              <span class="text-[11px] sm:text-xs font-casino tracking-widest text-amber-300 uppercase">Борд • 5 карт на столе</span>
+              <span class="h-[1px] w-6 sm:w-10 bg-yellow-500/40"></span>
+            </div>
+            <p class="text-[11px] sm:text-xs text-stone-300/80 mb-4" id="boardHintText">
+              🃏 Нажимай на карты по очереди или открывай раунды кнопками ниже
+            </p>
+
+            <!-- Community Cards Row (ALL INITIALLY CLOSED) -->
+            <div class="flex items-center justify-center gap-2 sm:gap-4 flex-wrap max-w-2xl mx-auto" id="communityCardsContainer">
+              
+              <!-- Board Card 0: 10♥ (Flop 1) -->
+              <div class="perspective-container w-[58px] h-[88px] sm:w-[84px] sm:h-[126px]" onclick="flipBoardCard(0)">
+                <div class="card-flipper pulse-card" id="commCard-0">
+                  <div class="card-face card-back-side card-back-pattern flex flex-col items-center justify-center">
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-yellow-400/60 bg-black/40 flex items-center justify-center text-yellow-300 text-xs sm:text-sm font-bold shadow-inner">?</div>
+                    <span class="text-[8px] sm:text-[10px] text-yellow-200 mt-1 font-casino tracking-wider font-semibold">ФЛОП</span>
+                  </div>
+                  <div class="card-face card-front-side bg-stone-50 text-rose-600 border border-stone-300 p-1.5 sm:p-2 flex flex-col justify-between shadow-2xl">
+                    <div class="flex flex-col items-start leading-none select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">10</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                    <div class="text-center text-base sm:text-2xl my-auto select-none">♥</div>
+                    <div class="flex flex-col items-end leading-none rotate-180 select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">10</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Board Card 1: J♥ (Flop 2) -->
+              <div class="perspective-container w-[58px] h-[88px] sm:w-[84px] sm:h-[126px]" onclick="flipBoardCard(1)">
+                <div class="card-flipper" id="commCard-1">
+                  <div class="card-face card-back-side card-back-pattern flex flex-col items-center justify-center">
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-yellow-400/60 bg-black/40 flex items-center justify-center text-yellow-300 text-xs sm:text-sm font-bold shadow-inner">?</div>
+                    <span class="text-[8px] sm:text-[10px] text-yellow-200 mt-1 font-casino tracking-wider font-semibold">ФЛОП</span>
+                  </div>
+                  <div class="card-face card-front-side bg-stone-50 text-rose-600 border border-stone-300 p-1.5 sm:p-2 flex flex-col justify-between shadow-2xl">
+                    <div class="flex flex-col items-start leading-none select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">J</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                    <div class="text-center text-sm sm:text-xl font-serif font-bold my-auto select-none">J♥</div>
+                    <div class="flex flex-col items-end leading-none rotate-180 select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">J</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Board Card 2: A♥ (Flop 3) -->
+              <div class="perspective-container w-[58px] h-[88px] sm:w-[84px] sm:h-[126px]" onclick="flipBoardCard(2)">
+                <div class="card-flipper" id="commCard-2">
+                  <div class="card-face card-back-side card-back-pattern flex flex-col items-center justify-center">
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-yellow-400/60 bg-black/40 flex items-center justify-center text-yellow-300 text-xs sm:text-sm font-bold shadow-inner">?</div>
+                    <span class="text-[8px] sm:text-[10px] text-yellow-200 mt-1 font-casino tracking-wider font-semibold">ФЛОП</span>
+                  </div>
+                  <div class="card-face card-front-side bg-stone-50 text-rose-600 border border-stone-300 p-1.5 sm:p-2 flex flex-col justify-between shadow-2xl">
+                    <div class="flex flex-col items-start leading-none select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">A</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                    <div class="text-center text-lg sm:text-2xl my-auto select-none">♥</div>
+                    <div class="flex flex-col items-end leading-none rotate-180 select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">A</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Board Card 3: 9♥ (Turn) -->
+              <div class="perspective-container w-[58px] h-[88px] sm:w-[84px] sm:h-[126px]" onclick="flipBoardCard(3)">
+                <div class="card-flipper" id="commCard-3">
+                  <div class="card-face card-back-side card-back-pattern flex flex-col items-center justify-center">
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-yellow-400/60 bg-black/40 flex items-center justify-center text-yellow-300 text-xs sm:text-sm font-bold shadow-inner">?</div>
+                    <span class="text-[8px] sm:text-[10px] text-yellow-200 mt-1 font-casino tracking-wider font-semibold">ТЕРН</span>
+                  </div>
+                  <div class="card-face card-front-side bg-stone-50 text-rose-600 border border-stone-300 p-1.5 sm:p-2 flex flex-col justify-between shadow-2xl">
+                    <div class="flex flex-col items-start leading-none select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">9</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                    <div class="text-center text-base sm:text-2xl my-auto select-none">♥</div>
+                    <div class="flex flex-col items-end leading-none rotate-180 select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">9</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Board Card 4: 8♥ (River) -->
+              <div class="perspective-container w-[58px] h-[88px] sm:w-[84px] sm:h-[126px]" onclick="flipBoardCard(4)">
+                <div class="card-flipper" id="commCard-4">
+                  <div class="card-face card-back-side card-back-pattern flex flex-col items-center justify-center">
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-yellow-400/60 bg-black/40 flex items-center justify-center text-yellow-300 text-xs sm:text-sm font-bold shadow-inner">?</div>
+                    <span class="text-[8px] sm:text-[10px] text-yellow-200 mt-1 font-casino tracking-wider font-semibold">РИВЕР</span>
+                  </div>
+                  <div class="card-face card-front-side bg-stone-50 text-rose-600 border border-stone-300 p-1.5 sm:p-2 flex flex-col justify-between shadow-2xl">
+                    <div class="flex flex-col items-start leading-none select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">8</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                    <div class="text-center text-base sm:text-2xl my-auto select-none">♥</div>
+                    <div class="flex flex-col items-end leading-none rotate-180 select-none">
+                      <span class="font-bold text-xs sm:text-base font-serif">8</span>
+                      <span class="text-[10px] sm:text-xs">♥</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Poker Street Buttons -->
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <button onclick="revealFlop()" class="px-3 py-1.5 rounded-full bg-stone-900/80 hover:bg-stone-800 border border-yellow-500/30 text-yellow-300 text-xs font-semibold tracking-wide transition active:scale-95">
+                Открыть Флоп (3 карты)
+              </button>
+              <button onclick="revealTurn()" class="px-3 py-1.5 rounded-full bg-stone-900/80 hover:bg-stone-800 border border-yellow-500/30 text-yellow-300 text-xs font-semibold tracking-wide transition active:scale-95">
+                Терн
+              </button>
+              <button onclick="revealRiver()" class="px-3 py-1.5 rounded-full bg-stone-900/80 hover:bg-stone-800 border border-yellow-500/30 text-yellow-300 text-xs font-semibold tracking-wide transition active:scale-95">
+                Ривер
+              </button>
+              <button onclick="revealEntireBoard()" class="px-3.5 py-1.5 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-400 text-yellow-200 text-xs font-bold tracking-wide transition active:scale-95">
+                Вскрыть весь стол ⚡
+              </button>
+            </div>
+          </div>
+
+          <!-- Hole Cards (Q♥ & K♥) -->
+          <div class="w-full flex flex-col items-center border-t border-yellow-500/20 pt-5">
+            <div class="text-center mb-3">
+              <span class="text-xs font-casino tracking-widest text-yellow-300 uppercase">Твоя рука • Две карманные карты</span>
+              <p class="text-[11px] text-stone-300/80" id="holeCardsHint">
+                👇 Нажми на карты, чтобы перевернуть их
+              </p>
+            </div>
+
+            <div class="flex items-center justify-center gap-4 sm:gap-6 py-1">
+              
+              <!-- Hole Card 0: Q♥ (Queen of Hearts) - Starts CLOSED -->
+              <div class="transform -rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300">
+                <div class="perspective-container w-[78px] h-[116px] sm:w-[104px] sm:h-[154px]" onclick="flipHoleCard(0)">
+                  <div class="card-flipper pulse-card" id="holeCard-0">
+                    <div class="card-face card-back-side card-back-pattern flex flex-col items-center justify-center p-2">
+                      <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-yellow-400 bg-black/60 flex items-center justify-center text-yellow-300 text-sm sm:text-base shadow-inner">👑</div>
+                      <span class="text-[10px] sm:text-xs text-yellow-200 mt-2 font-casino tracking-wider font-bold">ОТКРЫТЬ</span>
+                    </div>
+                    <div class="card-face card-front-side bg-gradient-to-b from-[#ffffff] via-[#fffdf9] to-[#faf3e3] text-rose-600 border-2 border-amber-400 p-2 sm:p-2.5 flex flex-col justify-between shadow-2xl">
+                      <div class="flex flex-col items-start leading-none select-none">
+                        <span class="font-bold text-base sm:text-2xl font-serif">Q</span>
+                        <span class="text-xs sm:text-sm">♥</span>
+                      </div>
+                      <div class="text-center my-auto">
+                        <div class="text-3xl sm:text-4xl filter drop-shadow">👸🏻</div>
+                        <div class="text-[9px] sm:text-[11px] font-casino uppercase tracking-wider text-rose-800 font-bold mt-1">Твоя Дама</div>
+                      </div>
+                      <div class="flex flex-col items-end leading-none rotate-180 select-none">
+                        <span class="font-bold text-base sm:text-2xl font-serif">Q</span>
+                        <span class="text-xs sm:text-sm">♥</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hole Card 1: K♥ (King of Hearts) - Starts CLOSED -->
+              <div class="transform rotate-3 hover:rotate-0 hover:scale-105 transition-all duration-300">
+                <div class="perspective-container w-[78px] h-[116px] sm:w-[104px] sm:h-[154px]" onclick="flipHoleCard(1)">
+                  <div class="card-flipper pulse-card" id="holeCard-1">
+                    <div class="card-face card-back-side card-back-pattern flex flex-col items-center justify-center p-2">
+                      <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-yellow-400 bg-black/60 flex items-center justify-center text-yellow-300 text-sm sm:text-base shadow-inner">👑</div>
+                      <span class="text-[10px] sm:text-xs text-yellow-200 mt-2 font-casino tracking-wider font-bold">ОТКРЫТЬ</span>
+                    </div>
+                    <div class="card-face card-front-side bg-gradient-to-b from-[#ffffff] via-[#fffdf9] to-[#faf3e3] text-rose-600 border-2 border-amber-400 p-2 sm:p-2.5 flex flex-col justify-between shadow-2xl">
+                      <div class="flex flex-col items-start leading-none select-none">
+                        <span class="font-bold text-base sm:text-2xl font-serif">K</span>
+                        <span class="text-xs sm:text-sm">♥</span>
+                      </div>
+                      <div class="text-center my-auto">
+                        <div class="text-3xl sm:text-4xl filter drop-shadow">🤴🏻</div>
+                        <div class="text-[9px] sm:text-[11px] font-casino uppercase tracking-wider text-rose-800 font-bold mt-1">Мой Король</div>
+                      </div>
+                      <div class="flex flex-col items-end leading-none rotate-180 select-none">
+                        <span class="font-bold text-base sm:text-2xl font-serif">K</span>
+                        <span class="text-xs sm:text-sm">♥</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Reveal Hand Button -->
+            <div class="mt-3">
+              <button onclick="revealBothHoleCards()" class="px-4 py-1.5 rounded-full bg-rose-950/70 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-xs font-semibold tracking-wide transition active:scale-95">
+                Вскрыть карты игрока 👑
+              </button>
+            </div>
+
+            <div class="mt-3 text-center">
+              <span class="font-hand text-lg sm:text-2xl text-yellow-200 font-bold">
+                «Ты — мой Король, я — твоя Дама сердца» ♥️
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ROYAL FLUSH SHOWDOWN BANNER -->
+      <div id="showdownBanner" class="hidden w-full max-w-xl mt-6 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-rose-950/95 via-black/95 to-amber-950/95 border-2 border-yellow-400/80 text-center shadow-2xl transform transition-all duration-500 scale-95 opacity-0">
+        <div class="text-3xl sm:text-4xl mb-2 animate-bounce">🏆 👑 ✨</div>
+        <div class="text-xs font-casino uppercase tracking-widest text-yellow-400 mb-1 font-bold">Комбинация собрана!</div>
+        <h3 class="text-2xl sm:text-3xl font-casino font-black text-yellow-300 mb-2">
+          ROYAL FLUSH НА ЧЕРВАХ!
+        </h3>
+        <p class="text-stone-300 text-xs sm:text-sm leading-relaxed max-w-md mx-auto mb-4">
+          10♥ • J♥ • Q♥ • K♥ • A♥<br>
+          Вероятность собрать эту комбинацию — <span class="text-yellow-300 font-bold">1 к 649 740</span>.<br>
+          Но то, что мы нашли друг друга — наша главная победа!
+        </p>
+
+        <button onclick="openPrizeModal()" class="px-7 py-3 rounded-full bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-stone-950 font-casino font-bold text-xs sm:text-sm tracking-wider uppercase shadow-xl hover:scale-105 active:scale-95 transition-all">
+          Забрать главный выигрыш 🎁
+        </button>
+      </div>
+
+    </section>
+
+    <!-- SECTION 2: ROMANTIC SLOT MACHINE "LOVE JACKPOT 333 & 777" -->
+    <section class="w-full flex flex-col items-center pt-4 border-t border-yellow-500/20">
+      
+      <!-- Slot Section Title -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] sm:text-xs font-casino uppercase tracking-wider mb-2">
+          🎰 VIP Слот Любви • 100% Удача
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif text-white tracking-wide">
+          Слот-машина «Love Jackpot 333»
+        </h2>
+        <p class="text-xs sm:text-sm text-stone-300/80 max-w-md mx-auto mt-1">
+          Крути барабаны! Счастливые тройки, сердца, короны и бесконечность уже заряжены на супер-выигрыш.
+        </p>
+      </div>
+
+      <!-- Slot Machine Cabinet -->
+      <div class="w-full max-w-xl slot-cabinet rounded-[2.5rem] p-4 sm:p-7 border-4 border-amber-600/60 relative shadow-2xl">
+        
+        <!-- Slot Marquee Top Header -->
+        <div class="w-full rounded-2xl bg-gradient-to-r from-amber-700 via-yellow-500 to-amber-700 p-1 mb-4 shadow-lg text-center" id="slotMarquee">
+          <div class="w-full bg-[#140b07] rounded-xl py-2 px-4 flex items-center justify-between border border-yellow-400/50">
+            <div class="flex items-center gap-1 text-yellow-300 text-sm">
+              <span>★</span><span>★</span>
+            </div>
+            <div class="font-casino font-black tracking-widest text-xs sm:text-base text-yellow-300 uppercase">
+              LOVE JACKPOT 333
+            </div>
+            <div class="flex items-center gap-1 text-yellow-300 text-sm">
+              <span>★</span><span>★</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reels Display Frame -->
+        <div class="slot-window rounded-2xl p-3 sm:p-4 border-2 border-yellow-500/40 relative">
+          
+          <!-- Payline Highlight Center Bar -->
+          <div class="absolute left-2 right-2 top-1/2 -translate-y-1/2 h-20 sm:h-24 bg-gradient-to-r from-yellow-500/10 via-rose-500/15 to-yellow-500/10 border-y-2 border-yellow-400/40 pointer-events-none z-10"></div>
+
+          <!-- 3 Reels Container -->
+          <div class="grid grid-cols-3 gap-2 sm:gap-4 relative z-0">
+            
+            <!-- Reel 1 -->
+            <div class="h-28 sm:h-36 bg-gradient-to-b from-[#111416] via-[#1c2227] to-[#111416] rounded-xl border border-stone-700 flex items-center justify-center overflow-hidden relative shadow-inner" id="reelBox-0">
+              <div class="text-4xl sm:text-6xl select-none font-bold text-yellow-300 font-casino transition-transform duration-100" id="reelSymbol-0">
+                3
+              </div>
+            </div>
+
+            <!-- Reel 2 -->
+            <div class="h-28 sm:h-36 bg-gradient-to-b from-[#111416] via-[#1c2227] to-[#111416] rounded-xl border border-stone-700 flex items-center justify-center overflow-hidden relative shadow-inner" id="reelBox-1">
+              <div class="text-4xl sm:text-6xl select-none font-bold text-rose-500 transition-transform duration-100" id="reelSymbol-1">
+                ❤️
+              </div>
+            </div>
+
+            <!-- Reel 3 -->
+            <div class="h-28 sm:h-36 bg-gradient-to-b from-[#111416] via-[#1c2227] to-[#111416] rounded-xl border border-stone-700 flex items-center justify-center overflow-hidden relative shadow-inner" id="reelBox-2">
+              <div class="text-4xl sm:text-6xl select-none font-bold text-yellow-300 transition-transform duration-100" id="reelSymbol-2">
+                👑
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Status / Payout Indicator -->
+          <div class="mt-3 text-center">
+            <div id="slotStatusMessage" class="text-xs sm:text-sm font-casino font-semibold text-yellow-300/90 tracking-wider">
+              Испытай удачу: нажми «Крутить спин»!
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls & Dashboard -->
+        <div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 bg-black/60 p-3 sm:p-4 rounded-2xl border border-yellow-500/30">
+          
+          <!-- Balance / Kisses Counter -->
+          <div class="flex items-center gap-4">
+            <div class="text-left">
+              <div class="text-[10px] text-stone-400 font-casino uppercase">Баланс поцелуев</div>
+              <div class="font-mono text-base sm:text-lg font-bold text-yellow-400 flex items-center gap-1">
+                <span>💋</span>
+                <span id="creditBalance">777</span>
+              </div>
+            </div>
+
+            <div class="h-8 w-[1px] bg-stone-700"></div>
+
+            <div class="text-left">
+              <div class="text-[10px] text-stone-400 font-casino uppercase">Спинов сделано</div>
+              <div class="font-mono text-base sm:text-lg font-bold text-rose-400" id="spinCounter">
+                0
+              </div>
+            </div>
+          </div>
+
+          <!-- Spin Action Buttons -->
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button id="spinBtn" onclick="triggerSpin(false)" class="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-casino font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all">
+              Крутить 🎰
+            </button>
+            <button onclick="triggerSpin(true)" class="px-4 py-3 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-stone-950 font-casino font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all" title="Гарантированный супер-джекпот">
+              333 ⚡
+            </button>
+          </div>
+        </div>
+
+        <!-- Romantic Symbols Legend -->
+        <div class="mt-4 pt-3 border-t border-stone-800 text-[10px] sm:text-xs text-stone-400 text-center flex items-center justify-around flex-wrap gap-1 font-light">
+          <span><b class="text-yellow-300 font-mono">3-3-3</b> = Счастливое число</span>
+          <span>•</span>
+          <span><b class="text-rose-400">❤️-❤️-❤️</b> = Вечная любовь</span>
+          <span>•</span>
+          <span><b class="text-amber-300">👑-❤️-👑</b> = Королевская пара</span>
+        </div>
+
+        <!-- HIDDEN INITIALLY: CASHOUT / WITHDRAW BUTTON (Appears only after slot jackpot) -->
+        <div id="cashoutSection" class="hidden mt-6 flex flex-col items-center transition-all duration-700 opacity-0 transform translate-y-4">
+          <button onclick="openCashoutModal()" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-yellow-500 to-emerald-600 hover:from-emerald-500 hover:to-yellow-400 text-stone-950 font-casino font-black text-xs sm:text-sm uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all border border-yellow-300 flex items-center justify-center gap-2 pulse-card">
+            <span>💸</span>
+            <span>Вывести выигрыш</span>
+            <span>💰</span>
+          </button>
+          <span class="text-[10px] text-amber-300/80 mt-2 font-mono tracking-wider animate-pulse">🎉 Джекпот подтвержден! Моментальная выплата без комиссии</span>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- SECTION 3: ROMANTIC WHEEL OF FORTUNE (КОЛЕСО ЖЕЛАНИЙ И ПРИКОЛОВ) -->
+    <section class="w-full flex flex-col items-center pt-8 border-t border-yellow-500/20">
+      
+      <!-- Wheel Header Intro -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-yellow-300 text-[11px] sm:text-xs font-casino uppercase tracking-wider mb-2">
+          🎡 VIP Колесо Фортуны • Купоны & Желания
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-serif text-white tracking-wide">
+          Колесо Любовных Желаний
+        </h2>
+        <p class="text-xs sm:text-sm text-stone-300/80 max-w-md mx-auto mt-1">
+          Крути колесо, забирай реальные купоны и желания без права на отказ! Все выигранные призы сохраняются в твоем хранилище.
+        </p>
+      </div>
+
+      <!-- Wheel Cabinet Container -->
+      <div class="w-full max-w-xl slot-cabinet rounded-[2.5rem] p-4 sm:p-7 border-4 border-amber-600/60 relative shadow-2xl flex flex-col items-center">
+        
+        <!-- Wheel Visual Stage with Brass Pointer -->
+        <div class="relative flex items-center justify-center p-2 sm:p-4 my-2">
+          
+          <!-- Top Brass Indicator Arrow (Flapper) -->
+          <div id="wheelFlapper" class="absolute -top-3 z-30 transform -translate-x-1/2 left-1/2 transition-transform duration-100 origin-top">
+            <svg width="40" height="46" viewBox="0 0 40 46" fill="none" xmlns="http://www.w3.org/2000/svg" class="filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
+              <path d="M20 44L7 12C5.5 8.5 8 5 11.8 5H28.2C32 5 34.5 8.5 33 12L20 44Z" fill="url(#pointerGold)" stroke="#fef08a" stroke-width="2"/>
+              <circle cx="20" cy="13" r="6" fill="#78350f" stroke="#facc15" stroke-width="2"/>
+              <defs>
+                <linearGradient id="pointerGold" x1="20" y1="5" x2="20" y2="44" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#facc15"/>
+                  <stop offset="0.5" stop-color="#ca8a04"/>
+                  <stop offset="1" stop-color="#eab308"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <!-- Glowing Outer Bezel Frame -->
+          <div class="p-2 sm:p-3 rounded-full bg-gradient-to-tr from-amber-700 via-yellow-400 to-yellow-700 shadow-[0_0_40px_rgba(234,179,8,0.35)] relative">
+            <canvas id="wheelCanvas" width="360" height="360" class="max-w-[290px] max-h-[290px] sm:max-w-[360px] sm:max-h-[360px] rounded-full cursor-pointer"></canvas>
+            
+            <!-- Central Golden Hub Pin -->
+            <div class="absolute inset-0 m-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-yellow-300 via-amber-500 to-yellow-600 border-4 border-[#120904] flex items-center justify-center shadow-2xl pointer-events-none z-20">
+              <div class="w-8 h-8 rounded-full bg-stone-950 flex items-center justify-center text-rose-500 text-base sm:text-lg font-bold shadow-inner">
+                ♥
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Wheel Controls -->
+        <div class="mt-4 w-full flex flex-col sm:flex-row items-center justify-between gap-3 bg-black/60 p-3 sm:p-4 rounded-2xl border border-yellow-500/30">
+          <div class="text-left">
+            <div class="text-[10px] text-stone-400 font-casino uppercase">Выиграно купонов</div>
+            <div class="font-mono text-base sm:text-lg font-bold text-yellow-400 flex items-center gap-1.5">
+              <span>🎟️</span>
+              <span id="collectedCouponsCount">0</span>
+            </div>
+          </div>
+
+          <button id="spinWheelBtn" onclick="spinWheel()" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 hover:from-amber-400 hover:to-yellow-300 text-stone-950 font-casino font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl active:scale-95 transition-all">
+            Крутить Колесо 🎡
+          </button>
+        </div>
+
+        <!-- Won Coupons Collection Shelf -->
+        <div class="w-full mt-5 pt-4 border-t border-stone-800">
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-[11px] sm:text-xs font-casino uppercase text-yellow-300 tracking-wider flex items-center gap-1.5">
+              <span>🗃️</span> Твои активированные купоны:
+            </div>
+            <span class="text-[10px] text-stone-400 font-mono" id="shelfStatusText">Пока пусто</span>
+          </div>
+
+          <!-- Coupons Grid List -->
+          <div id="couponsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
+            <!-- Dynamically populated coupon items -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- WHEEL PRIZE VOUCHER MODAL -->
+    <div id="wheelPrizeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-opacity duration-300 opacity-0">
+      <div class="relative w-full max-w-lg bg-[#140f0c] rounded-3xl p-6 sm:p-8 border-2 border-yellow-400 shadow-2xl text-stone-200 text-center transform scale-90 transition-transform duration-300" id="wheelPrizeCard">
+        
+        <button onclick="closeWheelPrizeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white flex items-center justify-center text-sm font-bold transition">
+          ✕
+        </button>
+
+        <div class="w-16 h-16 rounded-full bg-yellow-500/20 border-2 border-yellow-400 mx-auto flex items-center justify-center text-3xl mb-3 animate-bounce" id="wheelModalIcon">
+          📜
+        </div>
+
+        <span class="text-[11px] font-casino tracking-widest text-amber-300 uppercase font-semibold">Официальный купон на желание #777</span>
+        <h4 class="text-2xl sm:text-3xl font-serif text-white mt-1 mb-3" id="wheelModalTitle">
+          Сектор Желания
+        </h4>
+
+        <!-- Golden Coupon Body -->
+        <div class="relative bg-gradient-to-r from-amber-950/80 via-yellow-950/70 to-amber-950/80 p-5 rounded-2xl border-2 border-dashed border-yellow-400/80 my-4 text-center overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 text-7xl opacity-10 pointer-events-none select-none font-casino">★</div>
+          <div class="text-[10px] font-casino tracking-wider text-yellow-300 uppercase mb-1">Без права на отказ • Действует бессрочно</div>
+          <div class="text-lg sm:text-2xl font-serif font-bold text-white mb-2" id="wheelModalPrizeText">
+            3 желания без отказа ✨
+          </div>
+          <p class="text-xs text-stone-300/90 leading-relaxed font-light" id="wheelModalDesc">
+            Предъяви этот купон в любой момент — я исполню его со всей нежностью и радостью!
+          </p>
+        </div>
+
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button onclick="claimWheelCoupon()" class="w-full sm:w-auto px-7 py-3.5 rounded-full bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-stone-950 font-casino font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg transition active:scale-95">
+            Сохранить в мои купоны 🎟️
+          </button>
+          <button onclick="closeWheelPrizeModal()" class="w-full sm:w-auto px-5 py-3 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 font-medium text-xs transition">
+            Закрыть
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JACKPOT / ROMANTIC PRIZE MODAL (POKER) -->
+    <div id="prizeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-opacity duration-300 opacity-0">
+      <div class="relative w-full max-w-lg bg-[#0e1613] rounded-3xl p-6 sm:p-8 border-2 border-yellow-500/80 shadow-2xl text-stone-200 text-center transform scale-90 transition-transform duration-300" id="prizeCard">
+        
+        <button onclick="closePrizeModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white flex items-center justify-center text-sm font-bold transition">
+          ✕
+        </button>
+
+        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-rose-600/20 border border-rose-500 mx-auto flex items-center justify-center text-3xl mb-3 animate-pulse">
+          ♥️
+        </div>
+
+        <span class="text-[11px] font-casino tracking-widest text-yellow-400 uppercase font-semibold">Официальный сертификат джекпота</span>
+        <h4 class="text-2xl sm:text-3xl font-serif text-white mt-1 mb-4">
+          Я пошла Олл-Ин на тебя
+        </h4>
+
+        <div class="text-stone-300 text-xs sm:text-sm space-y-3 font-light text-left bg-black/60 p-4 rounded-xl border border-yellow-500/20 leading-relaxed">
+          <p>
+            Знаешь, с тобой мне никогда не нужно блефовать или притворяться. Рядом с тобой я самая настоящая и искренне счастливая.
+          </p>
+          <p>
+            Ты — мой самый главный выигрыш в жизни, моя опора, мой Король и мой самый родной человек. И этот червовый Роял Флеш — знак того, что у нашей любви нет конкурентов!
+          </p>
+          <p class="text-yellow-300 font-medium">
+            Твой законный выигрыш: праздничное свидание, самые нежные объятия и бесконечное количество поцелуев.
+          </p>
+        </div>
+
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button onclick="acceptPrize()" class="w-full sm:w-auto px-6 py-3 rounded-full bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs sm:text-sm shadow-lg transition active:scale-95">
+            Принимаю безоговорочно! 🥰
+          </button>
+          <button onclick="closePrizeModal()" class="w-full sm:w-auto px-5 py-3 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 font-medium text-xs transition">
+            Вернуться в зал
+          </button>
+        </div>
+
+        <div id="acceptConfirmation" class="hidden mt-4 text-rose-400 font-hand text-lg sm:text-xl">
+          🎉 Договорились! Свидание официально забронировано за нами!
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW: SLOT CASHOUT MODAL (БЕСКОНЕЧНОСТЬ ПОЦЕЛУЕВ И ОБЪЯТИЙ) -->
+    <div id="cashoutModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-opacity duration-300 opacity-0">
+      <div class="relative w-full max-w-lg bg-[#0d1612] rounded-3xl p-6 sm:p-8 border-2 border-emerald-400/80 shadow-2xl text-stone-200 text-center transform scale-90 transition-transform duration-300" id="cashoutCard">
+        
+        <button onclick="closeCashoutModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white flex items-center justify-center text-sm font-bold transition">
+          ✕
+        </button>
+
+        <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 mx-auto flex items-center justify-center text-3xl mb-3 animate-bounce">
+          💋
+        </div>
+
+        <span class="text-[11px] font-casino tracking-widest text-emerald-400 uppercase font-semibold">VIP Касса Любви • Банковский Чек #333</span>
+        <h4 class="text-2xl sm:text-3xl font-serif text-white mt-1 mb-3">
+          Выплата одобрена!
+        </h4>
+
+        <!-- Main Prize Highlight Box -->
+        <div class="bg-gradient-to-b from-emerald-950/80 to-black/80 p-4 sm:p-5 rounded-2xl border border-yellow-500/40 my-4 text-center">
+          <div class="text-[11px] font-casino tracking-wider text-yellow-300 uppercase mb-1">Сумма к зачислению:</div>
+          <div class="text-xl sm:text-2xl font-casino font-black text-white flex items-center justify-center gap-2 flex-wrap">
+            <span class="text-rose-500">Бесконечность</span>
+            <span class="text-yellow-400">поцелуев</span>
+            <span class="text-rose-400">и объятий</span>
+          </div>
+          <div class="text-2xl sm:text-3xl mt-1 tracking-widest">
+            ∞ 💋 & 🫂
+          </div>
+        </div>
+
+        <div class="text-stone-300 text-xs sm:text-sm space-y-3 font-light text-left bg-black/60 p-4 rounded-xl border border-stone-800 leading-relaxed">
+          <p>
+            🏦 <b>Условия выплаты:</b> Выигрыш зачисляется пожизненно и не сгорает ни при каких обстоятельствах.
+          </p>
+          <p>
+            ❤️ <b>Где обналичить:</b> Получить поцелуи и крепкие объятия можно прямо сейчас — просто подойди или обними автора этого сайта!
+          </p>
+          <p class="text-yellow-300 font-medium">
+            Комиссия составила 0%, а процент взаимной любви — 100%!
+          </p>
+        </div>
+
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button onclick="claimCashoutNow()" class="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-semibold text-xs sm:text-sm shadow-lg transition active:scale-95">
+            Забрать поцелуи прямо сейчас! 💋
+          </button>
+          <button onclick="closeCashoutModal()" class="w-full sm:w-auto px-5 py-3 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 font-medium text-xs transition">
+            Вернуться к игре
+          </button>
+        </div>
+
+        <div id="cashoutConfirmation" class="hidden mt-4 text-emerald-400 font-hand text-lg sm:text-xl">
+          ✨ Транзакция прошла успешно! Иди забирать свои поцелуи и объятия! 🥰
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-4 text-[11px] text-stone-400 border-t border-stone-900 mt-10">
+    Сделано с бесконечной любовью ♥️ • Специально для тебя
+  </footer>
+
+  <script>
+    /* ==========================================================
+       1. WEB AUDIO API SYNTHESIZER (No external audio files needed)
+       ========================================================== */
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Realistic Card Flip sound
+    function playCardSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const bufferSize = audioCtx.sampleRate * 0.08;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+        }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1300;
+        filter.Q.value = 1.3;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.28, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        noise.start();
+      } catch(e) {}
+    }
+
+    // Poker Chip sound
+    function playChipSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(2300 + Math.random() * 600, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.07);
+      } catch(e) {}
+    }
+
+    // Slot Reel Tick sound
+    function playReelTick() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(420 + Math.random() * 80, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.045);
+      } catch(e) {}
+    }
+
+    // Grand Victory Fanfare
+    function playFanfare() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const notes = [
+          { freq: 261.63, time: 0.0, dur: 0.15 }, // C4
+          { freq: 329.63, time: 0.15, dur: 0.15 }, // E4
+          { freq: 392.00, time: 0.30, dur: 0.15 }, // G4
+          { freq: 523.25, time: 0.45, dur: 0.45 }, // C5
+          { freq: 659.25, time: 0.65, dur: 0.70 }  // E5
+        ];
+
+        notes.forEach(n => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(n.freq, audioCtx.currentTime + n.time);
+
+          gain.gain.setValueAtTime(0.001, audioCtx.currentTime + n.time);
+          gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + n.time + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + n.time + n.dur);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(audioCtx.currentTime + n.time);
+          osc.stop(audioCtx.currentTime + n.time + n.dur + 0.05);
+        });
+      } catch(e) {}
+    }
+
+    // Toggle Sound Button
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+    const soundIcon = document.getElementById('soundIcon');
+    const soundText = document.getElementById('soundText');
+
+    soundToggleBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) {
+        initAudio();
+        soundIcon.textContent = '🔊';
+        soundText.textContent = 'Звук: Вкл';
+      } else {
+        soundIcon.textContent = '🔇';
+        soundText.textContent = 'Звук: Выкл';
+      }
+    });
+
+    /* ==========================================================
+       2. POKER LOGIC (All-Closed Start -> 3D Flip -> Royal Flush)
+       ========================================================== */
+    const boardCardsState = [false, false, false, false, false];
+    const holeCardsState = [false, false];
+    let victoryTriggered = false;
+
+    function flipBoardCard(index) {
+      if (boardCardsState[index]) return;
+
+      playCardSound();
+      boardCardsState[index] = true;
+      const el = document.getElementById(`commCard-${index}`);
+      el.classList.add('is-revealed');
+      el.classList.remove('pulse-card');
+
+      const nextIdx = boardCardsState.findIndex(s => s === false);
+      if (nextIdx !== -1) {
+        document.getElementById(`commCard-${nextIdx}`).classList.add('pulse-card');
+      }
+
+      checkVictoryCondition();
+    }
+
+    function flipHoleCard(index) {
+      if (holeCardsState[index]) return;
+
+      playCardSound();
+      holeCardsState[index] = true;
+      const el = document.getElementById(`holeCard-${index}`);
+      el.classList.add('is-revealed');
+      el.classList.remove('pulse-card');
+
+      checkVictoryCondition();
+    }
+
+    function revealBothHoleCards() {
+      if (!holeCardsState[0]) flipHoleCard(0);
+      setTimeout(() => {
+        if (!holeCardsState[1]) flipHoleCard(1);
+      }, 150);
+    }
+
+    function revealFlop() {
+      [0, 1, 2].forEach((idx, i) => {
+        setTimeout(() => flipBoardCard(idx), i * 160);
+      });
+    }
+
+    function revealTurn() {
+      if (!boardCardsState[0] || !boardCardsState[1] || !boardCardsState[2]) {
+        revealFlop();
+        setTimeout(() => flipBoardCard(3), 500);
+      } else {
+        flipBoardCard(3);
+      }
+    }
+
+    function revealRiver() {
+      if (!boardCardsState[3]) {
+        revealTurn();
+        setTimeout(() => flipBoardCard(4), 500);
+      } else {
+        flipBoardCard(4);
+      }
+    }
+
+    function revealEntireBoard() {
+      boardCardsState.forEach((state, idx) => {
+        if (!state) {
+          setTimeout(() => flipBoardCard(idx), idx * 160);
+        }
+      });
+      setTimeout(() => revealBothHoleCards(), 650);
+    }
+
+    function checkVictoryCondition() {
+      const allBoardOpen = boardCardsState.every(Boolean);
+      const holeCardsOpen = holeCardsState[0] && holeCardsState[1];
+
+      if (allBoardOpen && !holeCardsOpen) {
+        setTimeout(() => {
+          revealBothHoleCards();
+        }, 400);
+        return;
+      }
+
+      if (allBoardOpen && holeCardsOpen && !victoryTriggered) {
+        victoryTriggered = true;
+        setTimeout(() => {
+          triggerRoyalFlushCelebration();
+        }, 600);
+      }
+    }
+
+    function triggerRoyalFlushCelebration() {
+      playFanfare();
+
+      const banner = document.getElementById('showdownBanner');
+      banner.classList.remove('hidden');
+      setTimeout(() => {
+        banner.classList.remove('scale-95', 'opacity-0');
+        banner.classList.add('scale-100', 'opacity-100');
+        banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 60);
+
+      launchConfetti();
+    }
+
+    function launchConfetti() {
+      if (typeof confetti !== 'function') return;
+
+      const duration = 3.5 * 1000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 70,
+          origin: { x: 0, y: 0.7 },
+          colors: ['#e11d48', '#fb7185', '#facc15', '#ffffff']
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 70,
+          origin: { x: 1, y: 0.7 },
+          colors: ['#e11d48', '#fb7185', '#facc15', '#ffffff']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    }
+
+    /* ==========================================================
+       3. MODAL CONTROLS
+       ========================================================== */
+    const prizeModal = document.getElementById('prizeModal');
+    const prizeCard = document.getElementById('prizeCard');
+
+    function openPrizeModal() {
+      playChipSound();
+      prizeModal.classList.remove('hidden');
+      setTimeout(() => {
+        prizeModal.classList.remove('opacity-0');
+        prizeCard.classList.remove('scale-90');
+        prizeCard.classList.add('scale-100');
+      }, 20);
+    }
+
+    function closePrizeModal() {
+      prizeModal.classList.add('opacity-0');
+      prizeCard.classList.remove('scale-100');
+      prizeCard.classList.add('scale-90');
+      setTimeout(() => {
+        prizeModal.classList.add('hidden');
+      }, 300);
+    }
+
+    function acceptPrize() {
+      playChipSound();
+      launchConfetti();
+      document.getElementById('acceptConfirmation').classList.remove('hidden');
+    }
+
+    /* ==========================================================
+       3.1 CASHOUT MODAL LOGIC (New feature)
+       ========================================================== */
+    const cashoutModal = document.getElementById('cashoutModal');
+    const cashoutCard = document.getElementById('cashoutCard');
+
+    function openCashoutModal() {
+      playFanfare();
+      launchConfetti();
+      cashoutModal.classList.remove('hidden');
+      setTimeout(() => {
+        cashoutModal.classList.remove('opacity-0');
+        cashoutCard.classList.remove('scale-90');
+        cashoutCard.classList.add('scale-100');
+      }, 20);
+    }
+
+    function closeCashoutModal() {
+      cashoutModal.classList.add('opacity-0');
+      cashoutCard.classList.remove('scale-100');
+      cashoutCard.classList.add('scale-90');
+      setTimeout(() => {
+        cashoutModal.classList.add('hidden');
+      }, 300);
+    }
+
+    function claimCashoutNow() {
+      playFanfare();
+      launchConfetti();
+      document.getElementById('cashoutConfirmation').classList.remove('hidden');
+    }
+
+    /* ==========================================================
+       4. SLOT MACHINE LOGIC ("LOVE JACKPOT 333 & 777")
+       ========================================================== */
+    const SYMBOLS = ['3', '❤️', '👑', '♾️', '💎', '7'];
+    
+    // Preset winning sets for guaranteed romantic celebrations
+    const WINNING_COMBOS = [
+      { combo: ['3', '3', '3'], title: '🎉 СУПЕР-ДЖЕКПОТ 3-3-3! НАШЕ СЧАСТЛИВОЕ ЧИСЛО!', prize: 3333 },
+      { combo: ['❤️', '❤️', '❤️'], title: '💖 МАКСИМАЛЬНАЯ ЛЮБОВЬ! 1 000 000 ПОЦЕЛУЕВ!', prize: 5000 },
+      { combo: ['👑', '❤️', '👑'], title: '👑 КОРОЛЕВСКИЙ ДЖЕКПОТ: КОРОЛЬ И ЕГО ДАМА!', prize: 2500 },
+      { combo: ['3', '❤️', '♾️'], title: '✨ 3 СЕРДЕЧКА НА ВСЮ БЕСКОНЕЧНОСТЬ!', prize: 1500 }
+    ];
+
+    let spinsCount = 0;
+    let credits = 777;
+    let isSpinning = false;
+
+    function triggerSpin(forceJackpot = false) {
+      if (isSpinning) return;
+      initAudio();
+
+      isSpinning = true;
+      spinsCount++;
+      document.getElementById('spinCounter').textContent = spinsCount;
+
+      const spinBtn = document.getElementById('spinBtn');
+      spinBtn.disabled = true;
+      spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      const statusEl = document.getElementById('slotStatusMessage');
+      const marquee = document.getElementById('slotMarquee');
+      marquee.classList.remove('jackpot-active');
+      statusEl.textContent = 'Барабаны крутятся... Ловим удачу! ✨';
+      statusEl.className = 'text-xs sm:text-sm font-casino font-semibold text-yellow-300 tracking-wider animate-pulse';
+
+      // Decide outcome: On spin 2 or if forced, trigger 3-3-3 jackpot
+      let finalResult = [];
+      let wonCombo = null;
+
+      if (forceJackpot || spinsCount % 2 === 0) {
+        wonCombo = forceJackpot ? WINNING_COMBOS[0] : WINNING_COMBOS[(spinsCount / 2) % WINNING_COMBOS.length];
+        finalResult = [...wonCombo.combo];
+      } else {
+        // Semi-winning or close romantic mix
+        finalResult = ['3', '❤️', '3'];
+      }
+
+      // Start reel spinning animation with interval ticks
+      const reels = [
+        document.getElementById('reelSymbol-0'),
+        document.getElementById('reelSymbol-1'),
+        document.getElementById('reelSymbol-2')
+      ];
+
+      const spinIntervals = [null, null, null];
+      const durations = [1200, 1700, 2200]; // Staggered stops
+
+      reels.forEach((reelEl, index) => {
+        let step = 0;
+        spinIntervals[index] = setInterval(() => {
+          step++;
+          const randomSym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+          reelEl.textContent = randomSym;
+          reelEl.style.transform = `translateY(${step % 2 === 0 ? '-8px' : '8px'}) scale(1.08)`;
+          if (index === 0 && step % 2 === 0) playReelTick();
+        }, 75);
+
+        // Stop each reel after its designated duration
+        setTimeout(() => {
+          clearInterval(spinIntervals[index]);
+          reelEl.textContent = finalResult[index];
+          reelEl.style.transform = 'translateY(0px) scale(1)';
+          playChipSound();
+
+          // After all 3 reels stop
+          if (index === 2) {
+            isSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            handleSpinOutcome(finalResult, wonCombo);
+          }
+        }, durations[index]);
+      });
+    }
+
+    function handleSpinOutcome(result, wonCombo) {
+      const statusEl = document.getElementById('slotStatusMessage');
+      const marquee = document.getElementById('slotMarquee');
+      const creditsEl = document.getElementById('creditBalance');
+
+      // Check if all three match or preset won
+      const isJackpot = result[0] === result[1] && result[1] === result[2];
+
+      if (isJackpot || wonCombo) {
+        marquee.classList.add('jackpot-active');
+        playFanfare();
+        launchConfetti();
+
+        const title = wonCombo ? wonCombo.title : '🎉 БЕЗОГОВОРОЧНАЯ ПОБЕДА!';
+        const reward = wonCombo ? wonCombo.prize : 2000;
+
+        credits += reward;
+        creditsEl.textContent = credits;
+
+        statusEl.innerHTML = `<span class="text-rose-400 font-bold text-sm sm:text-base">${title}</span>`;
+        statusEl.className = 'text-xs sm:text-sm font-casino font-bold text-yellow-300 tracking-wider';
+
+        // REVEAL CASHOUT BUTTON ONLY ON JACKPOT
+        revealCashoutButton();
+      } else {
+        playChipSound();
+        credits += 50;
+        creditsEl.textContent = credits;
+        statusEl.textContent = 'Красивая пара символов! Попробуй еще разок! 💖';
+        statusEl.className = 'text-xs sm:text-sm font-casino font-semibold text-rose-300 tracking-wider';
+      }
+    }
+
+    function revealCashoutButton() {
+      const cashoutSec = document.getElementById('cashoutSection');
+      if (!cashoutSec) return;
+      if (cashoutSec.classList.contains('hidden')) {
+        cashoutSec.classList.remove('hidden');
+        // Smooth entrance animation
+        setTimeout(() => {
+          cashoutSec.classList.remove('opacity-0', 'translate-y-4');
+          cashoutSec.classList.add('opacity-100', 'translate-y-0');
+        }, 50);
+      }
+    }
+
+    /* ==========================================================
+       5. WHEEL OF FORTUNE LOGIC (КОЛЕСО ЖЕЛАНИЙ И ПРИКОЛОВ)
+       ========================================================== */
+    const WHEEL_SECTORS = [
+      { text: "3 ЖЕЛАНИЯ ✨", fullTitle: "3 желания без отказа 📜✨", icon: "📜", desc: "Три любых твоих желания без права на отказ. Загадывай всё, что душе угодно!", bg: "#881337", textCol: "#fef08a" },
+      { text: "МАССАЖ 💆‍♂️", fullTitle: "Долгий массаж спины 💆‍♂️", icon: "💆‍♂️", desc: "Расслабляющий вечерний массаж с маслами под приятную музыку без ограничения по времени.", bg: "#1e293b", textCol: "#ffffff" },
+      { text: "ЗАВТРАК 🥐", fullTitle: "Завтрак в постель 🥐☕", icon: "🥐", desc: "Ароматный кофе, круассан или твой любимый завтрак прямо в постель в любой выбранный тобой день!", bg: "#b45309", textCol: "#fef08a" },
+      { text: "УЖИН 🍕", fullTitle: "Твой любимый ужин 🍕🍷", icon: "🍕", desc: "Я готовлю или заказываю твое самое любимое блюдо. Романтическая сервировка включена!", bg: "#064e3b", textCol: "#ffffff" },
+      { text: "ТВОЙ ВЕЧЕР 🎮", fullTitle: "Вечер по твоим правилам 🎮", icon: "🎮", desc: "Игры, киномарафон, спорт или просто отдых — весь вечер проходит строго по твоему сценарию!", bg: "#4c0519", textCol: "#fef08a" },
+      { text: "100 ПОЦЕЛУЕВ 💋", fullTitle: "100 поцелуев вне очереди 💋", icon: "💋", desc: "Сотня самых сладких и крепких поцелуев, обналичиваемых моментально в любом месте!", bg: "#831843", textCol: "#ffffff" },
+      { text: "БЕЗ ПОСУДЫ 🧽", fullTitle: "Право не мыть посуду неделю 🧽🚫", icon: "🧽", desc: "Официальное освобождение от любой домашней рутины на целых 7 дней подряд!", bg: "#1e3a8a", textCol: "#ffffff" },
+      { text: "СВИДАНИЕ 🌃", fullTitle: "Свидание-сюрприз 🌃", icon: "🌃", desc: "Особенное свидание в секретном месте, где от тебя требуется только быть красивым и рядом!", bg: "#713f12", textCol: "#fef08a" }
+    ];
+
+    const wheelCanvas = document.getElementById('wheelCanvas');
+    const wheelCtx = wheelCanvas.getContext('2d');
+    const numSectors = WHEEL_SECTORS.length;
+    const arcSize = (2 * Math.PI) / numSectors;
+
+    let currentWheelAngle = 0;
+    let isWheelSpinning = false;
+    let wonCoupons = [];
+    let activeWonSector = null;
+    let lastTickSector = -1;
+
+    // Sound for the wheel peg flapper tick
+    function playWheelTick() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(750 + Math.random() * 200, audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.035);
+
+        // Animate the brass flapper visually
+        const flapper = document.getElementById('wheelFlapper');
+        if (flapper) {
+          flapper.style.transform = 'translate(-50%, 0) rotate(-18deg)';
+          setTimeout(() => {
+            flapper.style.transform = 'translate(-50%, 0) rotate(0deg)';
+          }, 60);
+        }
+      } catch(e) {}
+    }
+
+    // Render Canvas Wheel Segments
+    function drawWheel() {
+      const w = wheelCanvas.width;
+      const h = wheelCanvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = cx - 12;
+
+      wheelCtx.clearRect(0, 0, w, h);
+
+      for (let i = 0; i < numSectors; i++) {
+        const sector = WHEEL_SECTORS[i];
+        const angle = currentWheelAngle + i * arcSize;
+
+        // Draw Wedge Slice
+        wheelCtx.beginPath();
+        wheelCtx.fillStyle = sector.bg;
+        wheelCtx.moveTo(cx, cy);
+        wheelCtx.arc(cx, cy, radius, angle, angle + arcSize);
+        wheelCtx.lineTo(cx, cy);
+        wheelCtx.fill();
+
+        // Slice Border & Gold Separators
+        wheelCtx.lineWidth = 3;
+        wheelCtx.strokeStyle = '#ca8a04';
+        wheelCtx.stroke();
+
+        // Inner Sector Text & Icon
+        wheelCtx.save();
+        wheelCtx.translate(cx, cy);
+        wheelCtx.rotate(angle + arcSize / 2);
+
+        // Outer Decorative Peg
+        wheelCtx.beginPath();
+        wheelCtx.arc(radius - 8, 0, 4.5, 0, 2 * Math.PI);
+        wheelCtx.fillStyle = '#fef08a';
+        wheelCtx.fill();
+        wheelCtx.stroke();
+
+        // Text Styling
+        wheelCtx.textAlign = 'right';
+        wheelCtx.textBaseline = 'middle';
+        wheelCtx.fillStyle = sector.textCol;
+        wheelCtx.font = 'bold 11px Cinzel, sans-serif';
+        wheelCtx.fillText(sector.text, radius - 24, 0);
+
+        wheelCtx.restore();
+      }
+
+      // Outer Ring
+      wheelCtx.beginPath();
+      wheelCtx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      wheelCtx.lineWidth = 6;
+      wheelCtx.strokeStyle = '#eab308';
+      wheelCtx.stroke();
+    }
+
+    // Spin Animation using Easing
+    function spinWheel() {
+      if (isWheelSpinning) return;
+      initAudio();
+
+      isWheelSpinning = true;
+      const spinBtn = document.getElementById('spinWheelBtn');
+      spinBtn.disabled = true;
+      spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      // 4 to 7 full rotations + random sector
+      const extraSpins = 5 + Math.floor(Math.random() * 3);
+      const targetSectorIndex = Math.floor(Math.random() * numSectors);
+
+      // The pointer is at the top (angle: 3 * PI / 2 or -PI / 2)
+      // We calculate target angle so that targetSectorIndex aligns with the top pointer
+      const sectorCenterAngle = targetSectorIndex * arcSize + arcSize / 2;
+      const targetOffset = (3 * Math.PI / 2) - sectorCenterAngle;
+      
+      const normalizedCurrent = currentWheelAngle % (2 * Math.PI);
+      const totalSpinAngle = (extraSpins * 2 * Math.PI) + (targetOffset - normalizedCurrent) + (2 * Math.PI);
+
+      const duration = 5200; // ms
+      const startTime = performance.now();
+      const startAngle = currentWheelAngle;
+
+      function easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+      }
+
+      function animateSpin(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeOutCubic(progress);
+
+        currentWheelAngle = startAngle + totalSpinAngle * eased;
+        drawWheel();
+
+        // Calculate currently passing sector under top flapper for ticking sound
+        const topAngle = (3 * Math.PI / 2 - currentWheelAngle) % (2 * Math.PI);
+        const positiveTopAngle = topAngle < 0 ? topAngle + 2 * Math.PI : topAngle;
+        const passingSector = Math.floor(positiveTopAngle / arcSize);
+
+        if (passingSector !== lastTickSector) {
+          playWheelTick();
+          lastTickSector = passingSector;
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animateSpin);
+        } else {
+          isWheelSpinning = false;
+          spinBtn.disabled = false;
+          spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+          // Final selected sector
+          activeWonSector = WHEEL_SECTORS[targetSectorIndex];
+          handleWheelWin(activeWonSector);
+        }
+      }
+
+      requestAnimationFrame(animateSpin);
+    }
+
+    function handleWheelWin(sector) {
+      playFanfare();
+      launchConfetti();
+
+      document.getElementById('wheelModalTitle').textContent = sector.fullTitle;
+      document.getElementById('wheelModalIcon').textContent = sector.icon;
+      document.getElementById('wheelModalPrizeText').textContent = sector.fullTitle;
+      document.getElementById('wheelModalDesc').textContent = sector.desc;
+
+      const modal = document.getElementById('wheelPrizeModal');
+      const card = document.getElementById('wheelPrizeCard');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-90');
+        card.classList.add('scale-100');
+      }, 20);
+    }
+
+    function closeWheelPrizeModal() {
+      const modal = document.getElementById('wheelPrizeModal');
+      const card = document.getElementById('wheelPrizeCard');
+      modal.classList.add('opacity-0');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-90');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    function claimWheelCoupon() {
+      if (!activeWonSector) return;
+      playChipSound();
+      wonCoupons.push({ ...activeWonSector, date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+      updateCouponsShelf();
+      closeWheelPrizeModal();
+    }
+
+    function updateCouponsShelf() {
+      const countEl = document.getElementById('collectedCouponsCount');
+      const shelfStatus = document.getElementById('shelfStatusText');
+      const listEl = document.getElementById('couponsList');
+
+      countEl.textContent = wonCoupons.length;
+      shelfStatus.textContent = `${wonCoupons.length} в наличии`;
+
+      listEl.innerHTML = '';
+      wonCoupons.forEach((c, idx) => {
+        const item = document.createElement('div');
+        item.className = 'p-2.5 rounded-xl bg-[#140b07] border border-yellow-500/30 flex items-center justify-between text-left shadow';
+        item.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-xl">${c.icon}</span>
+            <div>
+              <div class="text-xs font-bold text-yellow-300 font-serif leading-tight">${c.fullTitle}</div>
+              <div class="text-[9px] text-stone-400 font-mono">Активирован в ${c.date}</div>
+            </div>
+          </div>
+          <button onclick="redeemCoupon(${idx})" class="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold active:scale-95 transition">
+            Предъявить
+          </button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function redeemCoupon(index) {
+      playChipSound();
+      launchConfetti();
+      const c = wonCoupons[index];
+      alert(`Купон «${c.fullTitle}» предъявлен к исполнению! Готовься получать удовольствие! 🥰`);
+    }
+
+    // Initialize Wheel on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      drawWheel();
+    });
+  </script>
+</body>
+</html>
